@@ -4,7 +4,7 @@ const {
   customers,
   revenue,
   users,
-} = require('../app/lib/placeholder-data.js');
+} = require('../app/lib/placeholder-data');
 const bcrypt = require('bcrypt');
 
 async function seedUsers() {
@@ -22,17 +22,17 @@ async function seedUsers() {
 
     console.log(`Created "users" table`);
 
-    // Insert data into the "users" table
-    const insertedUsers = await Promise.all(
-      users.map(async (user) => {
-        const hashedPassword = await bcrypt.hash(user.password, 10);
-        return sql`
+    // Insert data into the "users" table using a for...of loop
+    const insertedUsers = [];
+    for (const user of users) {
+      const hashedPassword = await bcrypt.hash(user.password, 10);
+      const result = await sql`
         INSERT INTO users (id, name, email, password)
         VALUES (${user.id}, ${user.name}, ${user.email}, ${hashedPassword})
         ON CONFLICT (id) DO NOTHING;
       `;
-      }),
-    );
+      insertedUsers.push(result);
+    }
 
     console.log(`Seeded ${insertedUsers.length} users`);
 
@@ -52,27 +52,27 @@ async function seedInvoices() {
 
     // Create the "invoices" table if it doesn't exist
     const createTable = await sql`
-    CREATE TABLE IF NOT EXISTS invoices (
-    id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
-    customer_id UUID NOT NULL,
-    amount INT NOT NULL,
-    status VARCHAR(255) NOT NULL,
-    date DATE NOT NULL
-  );
-`;
+      CREATE TABLE IF NOT EXISTS invoices (
+        id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
+        customer_id UUID NOT NULL,
+        amount INT NOT NULL,
+        status VARCHAR(255) NOT NULL,
+        date DATE NOT NULL
+      );
+    `;
 
     console.log(`Created "invoices" table`);
 
-    // Insert data into the "invoices" table
-    const insertedInvoices = await Promise.all(
-      invoices.map(
-        (invoice) => sql`
+    // Insert data into the "invoices" table using a for...of loop
+    const insertedInvoices = [];
+    for (const invoice of invoices) {
+      const result = await sql`
         INSERT INTO invoices (customer_id, amount, status, date)
         VALUES (${invoice.customer_id}, ${invoice.amount}, ${invoice.status}, ${invoice.date})
         ON CONFLICT (id) DO NOTHING;
-      `,
-      ),
-    );
+      `;
+      insertedInvoices.push(result);
+    }
 
     console.log(`Seeded ${insertedInvoices.length} invoices`);
 
@@ -102,16 +102,16 @@ async function seedCustomers() {
 
     console.log(`Created "customers" table`);
 
-    // Insert data into the "customers" table
-    const insertedCustomers = await Promise.all(
-      customers.map(
-        (customer) => sql`
+    // Insert data into the "customers" table using a for...of loop
+    const insertedCustomers = [];
+    for (const customer of customers) {
+      const result = await sql`
         INSERT INTO customers (id, name, email, image_url)
         VALUES (${customer.id}, ${customer.name}, ${customer.email}, ${customer.image_url})
         ON CONFLICT (id) DO NOTHING;
-      `,
-      ),
-    );
+      `;
+      insertedCustomers.push(result);
+    }
 
     console.log(`Seeded ${insertedCustomers.length} customers`);
 
@@ -137,16 +137,16 @@ async function seedRevenue() {
 
     console.log(`Created "revenue" table`);
 
-    // Insert data into the "revenue" table
-    const insertedRevenue = await Promise.all(
-      revenue.map(
-        (rev) => sql`
+    // Insert data into the "revenue" table using a for...of loop
+    const insertedRevenue = [];
+    for (const rev of revenue) {
+      const result = await sql`
         INSERT INTO revenue (month, revenue)
         VALUES (${rev.month}, ${rev.revenue})
         ON CONFLICT (month) DO NOTHING;
-      `,
-      ),
-    );
+      `;
+      insertedRevenue.push(result);
+    }
 
     console.log(`Seeded ${insertedRevenue.length} revenue`);
 
